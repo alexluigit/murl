@@ -11,8 +11,7 @@ TEMPLATE_TEMP="[{\"title\":\" Clear\",\"cmd\":\"rm $URL_TEMP\"},{\"title\":\"
 TEMPLATE_HIST="[{\"title\":\" Clear All\",\"cmd\":\"rm $URL_HIST\"},{\"title\":\" Temp\",\"cmd\":\"mpv_url temp\"}]"
 
 _try_add_url() {
-  URL=$CLIPBOARD
-  __notify "Trying to add url from" "$host"
+  URL=$CLIPBOARD; __notify_once
   [[ "$host" == "www.bilibili.com" ]] && __handle_bilivideo
   [[ "$host" == "live.bilibili.com" ]] && __handle_bililive
   URL_TITLE=$(__get_title $URL)
@@ -35,6 +34,10 @@ _url_action() {
 }
 
 __get_title() { curl -sL -x 127.0.0.1:1088 "${HEADER[@]}" "$1" | pup 'title text{}'; }
+__notify_once() {
+  test -z $(grep $URL $CACHE_DIR/notify) && \
+  __notify "Try add..." "$URL"; echo $URL >> $CACHE_DIR/notify
+}
 __add_url() {
   echo $(__updated_list "$1") > "$1"
   $2 && __notify "Added to playlist" "$URL_TITLE"

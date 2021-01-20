@@ -33,7 +33,7 @@ _url_action() {
   esac
 }
 
-__get_title() { curl -sL -x 127.0.0.1:1088 "${HEADER[@]}" "$1" | pup 'title text{}'; }
+__get_title() { curl -sL ${HEADER[@]} $1 | pup --charset utf8 -p 'title text{}'; }
 __notify_once() {
   test -z $(grep $URL $CACHE_DIR/notify) && \
   __notify "Try add..." "$URL"; echo $URL >> $CACHE_DIR/notify

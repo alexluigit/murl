@@ -66,7 +66,7 @@ __url_play() {
   local subfile=$(jq -r --arg u "$url" '.[] | select(.url == $u) | .sub' $URLS_HIST)
   [[ -n "$subfile" ]] && local sub_flag="--sub-file=$subfile"
   command -v floatwin >/dev/null && floatwin_cmd=(floatwin -c mpv -C gl -d $DIMENSION)
-  video_cmd=(mpv "$sub_flag" "$url")
+  video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' "$url" )
   stream_cmd=(qlphelper --fa 0.6 -u "$url")
   test "$FLOATWIN" == "true" && {
     video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})

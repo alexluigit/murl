@@ -14,11 +14,11 @@ OPTS_LIST="$CACHE_DIR/opts_list.json"
 PLAYING=`cat $CACHE_DIR/playing 2>/dev/null`
 VIDEO_URL=("www.youtube.com" "lbry.tv" "www.bilibili.com")
 STREAM_URL=("live.bilibili.com" "www.huya.com" "www.douyu.com")
-LIST_TEMP="[{\"title\":\" Options\",\"cmd\":\"murl opts\"}]"
-OPTS_TEMP="[{\"title\":\" Watch later\",\"cmd\":\"murl main\"},
-            {\"title\":\" History\",\"cmd\":\"murl hist\"},
-            {\"title\":\" Clear playlist\",\"cmd\":\"rm $URLS_MAIN\"},
-            {\"title\":\" Clear history\",\"cmd\":\"rm $URLS_HIST\"}]"
+LIST_TEMP='{"title":" Options","cmd":"murl opts"}'
+OPTS_TEMP='[{"title":" History","cmd":"murl hist"},
+            {"title":" Watch Later","cmd":"murl main"},
+            {"title":" Clear playlist","cmd":"rm $URLS_MAIN"},
+            {"title":" Clear history","cmd":"rm $URLS_HIST"}]'
 
 __rofi() { rofi -multi-select -theme $ROFI_THEME -p "$1" -dmenu -i; }
 __get_title() { curl -sL "${HEADER[@]}" "$@" | pup --charset utf8 -p 'title text{}'; }
@@ -93,7 +93,7 @@ _record_url() {
   [[ "$HOST" == "www.bilibili.com" ]] && __bilivideo_subs
   __update_hist_list
 }
-_level2() {
+_handle_menu() {
   chosen=$(jq -r '.[] .title' $LIST | __rofi "$1")
   case $chosen in
     "") exit 0;;
@@ -120,9 +120,9 @@ _handle_url() {
 }
 _init() {
   [ -d $CACHE_DIR ] || mkdir -p $SUB_DIR
-  [ -f $URLS_MAIN ] || echo "$LIST_TEMP" > $URLS_MAIN
-  [ -f $URLS_HIST ] || echo "$LIST_TEMP" > $URLS_HIST
-  [ -f $OPTS_LIST ] || echo "$OPTS_TEMP" > $OPTS_LIST
+  [ -f $URLS_MAIN ] || printf "[$LIST_TEMP]" > $URLS_MAIN
+  [ -f $URLS_HIST ] || printf "[$LIST_TEMP]" > $URLS_HIST
+  [ -f $OPTS_LIST ] || printf "$OPTS_TEMP" > $OPTS_LIST
   eval "$PROXY"
   local clipboard=`xclip -sel clipboard -o 2>/dev/null`
   URL=${@:-$clipboard}
@@ -132,9 +132,13 @@ _init() {
 }
 _init "${@:2}"
 
-main() { LIST=$URLS_MAIN; _level2 "Watch later: "; }
-hist() { LIST=$URLS_HIST; _level2 "History: "; }
-opts() { LIST=$OPTS_LIST; _level2 "Choose Action: "; }
+gen() {
+  parser='split("\n")|map(split(" "))|.[]|map(select(length>0))|{"title":.[0],"url":.[1]}'
+  jq -s '.' <(printf "$LIST_TEMP") <(jq -R "$parser" ~/.config/murl/list) > $URLS_MAIN
+}
+main() { LIST=$URLS_MAIN; _handle_menu "Watch later: "; }
+hist() { LIST=$URLS_HIST; _handle_menu "History: "; }
+opts() { LIST=$OPTS_LIST; _handle_menu "Choose Action: "; }
 toggle() { test "$FLOATWIN" == "true" && __url_play $PLAYING || echo "Floatwin not enabled."; }
 
 "$@"

@@ -1,11 +1,10 @@
 #!/bin/sh
-# CONFIG
-CACHE_DIR="${XDG_CACHE_HOME:-~/.cache}/murl"
-FLOATWIN=true
-DIMENSION=50%x50%+100+100
-ROFI_THEME=~/.config/rofi/themes/launcher.rasi
-PROXY=""
 [[ -f ~/.config/murl/config ]] && . ~/.config/murl/config
+CACHE_DIR=${cache_dir:-~/.cache/murl}
+FLOATWIN=${enable_floatwindow:-false}
+DIMENSION=${float_window_dimension:-50%x50%+100+100}
+ROFI_THEME=${rofi_theme_path:-~/.config/rofi/themes/launcher.rasi}
+PROXY=$proxy
 
 SUB_DIR="$CACHE_DIR/subs"
 URLS_MAIN="$CACHE_DIR/main_list.json"
@@ -139,6 +138,6 @@ gen() {
 main() { LIST=$URLS_MAIN; _handle_menu "Watch later: "; }
 hist() { LIST=$URLS_HIST; _handle_menu "History: "; }
 opts() { LIST=$OPTS_LIST; _handle_menu "Choose Action: "; }
-toggle() { test "$FLOATWIN" == "true" && __url_play $PLAYING || echo "Floatwin not enabled."; }
+toggle() { "$FLOATWIN" && __url_play $PLAYING || echo "Floatwin not enabled."; }
 
 "$@"

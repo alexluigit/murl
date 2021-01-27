@@ -15,10 +15,10 @@ PLAYING=`cat $CACHE_DIR/playing 2>/dev/null`
 VIDEO_URL=("www.youtube.com" "lbry.tv" "www.bilibili.com")
 STREAM_URL=("live.bilibili.com" "www.huya.com" "www.douyu.com")
 LIST_TEMP='{"title":" Options","cmd":"murl opts"}'
-OPTS_TEMP='[{"title":" History","cmd":"murl hist"},
-            {"title":" Watch Later","cmd":"murl main"},
-            {"title":" Clear playlist","cmd":"rm $URLS_MAIN"},
-            {"title":" Clear history","cmd":"rm $URLS_HIST"}]'
+OPTS_TEMP='{"title":" History","cmd":"murl hist"},
+           {"title":" Watch Later","cmd":"murl main"},
+           {"title":" Clear playlist","cmd":"rm $URLS_MAIN"},
+           {"title":" Clear history","cmd":"rm $URLS_HIST"}'
 
 __rofi() { rofi -multi-select -theme $ROFI_THEME -p "$1" -dmenu -i; }
 __get_title() { curl -sL "${HEADER[@]}" "$@" | pup --charset utf8 -p 'title text{}'; }
@@ -120,9 +120,9 @@ _handle_url() {
 }
 _init() {
   [ -d $CACHE_DIR ] || mkdir -p $SUB_DIR
-  [ -f $URLS_MAIN ] || printf "[$LIST_TEMP]" > $URLS_MAIN
-  [ -f $URLS_HIST ] || printf "[$LIST_TEMP]" > $URLS_HIST
-  [ -f $OPTS_LIST ] || printf "$OPTS_TEMP" > $OPTS_LIST
+  [ -f $URLS_MAIN ] || jq -s "[$LIST_TEMP]" > $URLS_MAIN
+  [ -f $URLS_HIST ] || jq -s "[$LIST_TEMP]" > $URLS_HIST
+  [ -f $OPTS_LIST ] || jq -s "[$OPTS_TEMP]" > $OPTS_LIST
   eval "$PROXY"
   local clipboard=`xclip -sel clipboard -o 2>/dev/null`
   URL=${@:-$clipboard}

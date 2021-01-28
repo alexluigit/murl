@@ -50,7 +50,7 @@ __update_hist_list() {
   local TITLE=$(__get_title "$URL")
   local updated=$(jq --arg t "$TITLE" --arg u "$URL" --arg s "$SUB" \
     '.[length] = {"title":$t,"url": $u,"sub":$s}|unique' "$URLS_HIST")
-  echo $updated > $URLS_HIST
+  jq -s "$updated" > $URLS_HIST
 }
 __kill() {
   killall qlphelper 2>/dev/null
@@ -78,13 +78,13 @@ __url_play() {
 }
 __url_delete() {
   local url=$1 new_list=$(jq --arg u "$url" '.[] | select(.url != $u)' $LIST | jq -s)
-  echo $new_list > $LIST
+  jq -s "$new_list" > $LIST
 }
 __url_watch_later() {
   local url="$1"
   local sel=$(jq -r --arg u "$url" '.[]|select(.url == $u)|tojson' $URLS_HIST)
   local updated=$(jq --arg i "$sel" '.+[$i|fromjson]|unique' "$URLS_MAIN")
-  echo $updated > $URLS_MAIN
+  jq -s "$updated" > $URLS_MAIN
 }
 
 _record_url() {

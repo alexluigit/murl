@@ -31,6 +31,8 @@ __pre_process_url() {
     live.bilibili.com)
       HEADER=(-H "User-Agent:Chrome/50")
       URL=$(awk -F? '{print $1}' <<< $URL);;
+    www.youtube.com)
+      URL=`sed 's/&t=.*//' <<< $URL`;;
   esac
 }
 __bilivideo_subs() {

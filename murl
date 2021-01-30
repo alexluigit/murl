@@ -67,8 +67,9 @@ __url_play() {
   local subfile=$(jq -r --arg u "$url" '.[] | select(.url == $u) | .sub' $URLS_HIST)
   [[ -n "$subfile" ]] && local sub_flag="--sub-file=$subfile"
   command -v floatwin >/dev/null && floatwin_cmd=(floatwin -c mpv:gl -d $DIMENSION)
-  video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' "$url" )
-  stream_cmd=(qlphelper --fa 0.6 -u "$url")
+  url=$(sed 's/&/\\&/' <<< $url)
+  video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
+  stream_cmd=(qlphelper --fa 0.6 -u \'$url\')
   test "$FLOATWIN" == "true" && {
     video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})
     stream_cmd=(${floatwin_cmd[@]} ${stream_cmd[@]})
@@ -126,6 +127,7 @@ _init() {
   [ -f $OPTS_LIST ] || jq -s "[$OPTS_TEMP]" > $OPTS_LIST
   eval "$PROXY"
   local clipboard=`xclip -sel clipboard -o 2>/dev/null`
+  killall xclip
   URL=${@:-$clipboard}
   local all_host=("${VIDEO_URL[@]}" "${STREAM_URL[@]}")
   local host=`__get_host $URL`; HOST=${host:-void}

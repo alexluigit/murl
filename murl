@@ -1,9 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 [[ -f ~/.config/murl/config ]] && . ~/.config/murl/config
-CACHE_DIR=${cache_dir:-~/.cache/murl}
-FLOATWIN=${enable_floatwindow:-false}
-DIMENSION=${float_window_dimension:-50%x50%+100+100}
-PROXY=$proxy
+CACHE_DIR=${CACHE_DIR:-~/.cache/murl}
 
 SUB_DIR="$CACHE_DIR/subs"
 URLS_MAIN="$CACHE_DIR/main_list.json"
@@ -52,15 +49,15 @@ _init() {
 }
 
 play() {
-  local url="$1" replace=${2:-false} subfile=$3 host=$(__get_host "$1")
+  local url="$1" replace=${REPLACE:-false} host=$(__get_host "$1")
   echo "$url" > $CACHE_DIR/playing
   "$replace" && __kill
-  [[ -n "$subfile" ]] && local sub_flag="--sub-file=$subfile"
-  command -v floatwin >/dev/null && floatwin_cmd=(floatwin -c mpv:gl -d $DIMENSION)
+  [[ -n "$SUB" ]] && local sub_flag="--sub-file=$SUB"
   url=$(sed 's/&/\\&/' <<< $url)
   video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
   stream_cmd=(qlphelper --fa 0.6 -u \'$url\')
-  test "$FLOATWIN" == "true" && {
+  command -v floatwin >/dev/null && [[ -n $DIMENSION ]] && {
+    floatwin_cmd=(floatwin -c mpv:gl -d $DIMENSION)
     video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})
     stream_cmd=(${floatwin_cmd[@]} ${stream_cmd[@]})
   }
@@ -83,6 +80,17 @@ gen() {
   jq -s '.' <(jq -R "$parser" ~/.config/murl/list) > $URLS_MAIN
 }
 toggle() { play $PLAYING; }
+
+while getopts "d:p:P:r:s:" opt; do
+  case $opt in
+    p) PROXY=$OPTARG;;
+    P) PROXY="export http_proxy=http://localhost:$OPTARG https_proxy=http://localhost:$OPTARG";;
+    r) REPLACE=true;;
+    s) SUB=$OPTARG;;
+    d) FLOATWIN=true; DIMENSION=$OPTARG;;
+  esac
+done
+shift $((OPTIND -1))
 
 _init
 $(declare -f -F $1 >/dev/null 2>&1) && { $@; exit 0; } || play "$@"

@@ -57,7 +57,7 @@ play() {
   video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
   stream_cmd=(qlphelper --fa 0.6 -u \'$url\')
   command -v floatwin >/dev/null && [[ -n $DIMENSION ]] && {
-    floatwin_cmd=(floatwin -c mpv:gl -d $DIMENSION)
+    floatwin_cmd=(floatwin -c mpv:gl -g $DIMENSION)
     video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})
     stream_cmd=(${floatwin_cmd[@]} ${stream_cmd[@]})
   }

@@ -6,7 +6,8 @@ SUB_DIR="$CACHE_DIR/subs"
 URLS_MAIN="$CACHE_DIR/main_list.json"
 URLS_HIST="$CACHE_DIR/hist_list.json"
 PLAYING=`cat $CACHE_DIR/playing 2>/dev/null`
-VIDEO_URL=("www.youtube.com" "lbry.tv" "www.bilibili.com" "www.odysee.com")
+VIDEO_URL=("www.youtube.com" "www.bilibili.com" "www.odysee.com")
+PROXY_URL=("www.youtube.com" "www.odysee.com")
 STREAM_URL=("live.bilibili.com" "www.huya.com" "www.douyu.com")
 __get_title() { curl -sL "${HEADER[@]}" "$@" | pup --charset utf8 -p 'title text{}'; }
 __get_host() { awk -F[/:] '{print $4}' <<< "$@"; }
@@ -19,6 +20,7 @@ __pre_process_url() {
       HEADER=(-H "User-Agent:Chrome/50")
       URL=$(awk -F? '{print $1}' <<< $URL);;
     www.youtube.com)
+      eval $PROXY
       URL=`sed 's/&t=.*//' <<< $URL`;;
   esac
 }
@@ -45,7 +47,6 @@ _init() {
   [ -d $SUB_DIR ] || mkdir -p $SUB_DIR
   [ -f $URLS_MAIN ] || touch $URLS_MAIN
   [ -f $URLS_HIST ] || touch $URLS_HIST
-  eval "$PROXY"
 }
 
 play() {
@@ -61,6 +62,7 @@ play() {
     video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})
     stream_cmd=(${floatwin_cmd[@]} ${stream_cmd[@]})
   }
+  [[ "${PROXY_URL}" == *"$host"* ]] && eval $PROXY
   [[ "${VIDEO_URL[@]}" == *"$host"* ]] && eval "exec ${video_cmd[@]} >/dev/null 2>&1"
   eval "exec ${stream_cmd[@]} >/dev/null 2>&1"
 }
@@ -84,7 +86,7 @@ toggle() { play $PLAYING; }
 while getopts "d:p:P:r:s:" opt; do
   case $opt in
     p) PROXY=$OPTARG;;
-    P) PROXY="export http_proxy=http://localhost:$OPTARG https_proxy=http://localhost:$OPTARG";;
+    P) PROXY="export {http,https}_proxy=http://localhost:$OPTARG";;
     r) REPLACE=true;;
     s) SUB=$OPTARG;;
     d) FLOATWIN=true; DIMENSION=$OPTARG;;

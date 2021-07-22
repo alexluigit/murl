@@ -37,10 +37,7 @@ __bilivideo_subs() {
 }
 __kill() {
   killall qlphelper 2>/dev/null
-  while read proc; do
-    [[ -n $(ps -p $proc -o cmd= 2>/dev/null | grep $PLAYING ) ]] \
-    && { kill -9 $proc; break; }
-  done <<< "$(pgrep mpv)"
+  sleep 2;
 }
 
 _init() {
@@ -83,7 +80,7 @@ gen() {
 }
 toggle() { play $PLAYING; }
 
-while getopts "d:p:P:r:s:" opt; do
+while getopts "d:p:P:rs:" opt; do
   case $opt in
     p) PROXY=$OPTARG;;
     P) PROXY="export {http,https}_proxy=http://localhost:$OPTARG";;

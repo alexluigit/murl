@@ -26,9 +26,9 @@ __pre_process_url() {
 }
 __bilivideo_subs() {
   bv_num=$(awk -F[:/?] '{print $6}' <<< $URL)
-  vid_info=$(curl https://api.bilibili.com/x/player/pagelist?bvid="$bv_num"\&jsonp=jsonp)
+  vid_info=$(curl -s https://api.bilibili.com/x/player/pagelist?bvid="$bv_num"\&jsonp=jsonp)
   cid=$(jq '.data[0].cid' <<< $vid_info)
-  curl -G 'http://api.bilibili.com/x/v1/dm/list.so' \
+  curl -sG 'http://api.bilibili.com/x/v1/dm/list.so' \
     --data-urlencode oid=$cid \
     --compressed -o $SUB_DIR/"$bv_num".xml
   danmaku2ass -s 1280x720 -fs 30 -dm 15 -a 0.5 -o $SUB_DIR/"$bv_num".ass $SUB_DIR/"$bv_num".xml

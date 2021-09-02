@@ -5,6 +5,7 @@ CACHE_DIR=${CACHE_DIR:-~/.cache/murl}
 SUB_DIR="$CACHE_DIR/subs"
 URLS_MAIN="$CACHE_DIR/main_list.json"
 URLS_HIST="$CACHE_DIR/hist_list.json"
+FLOAT=false
 PLAYING=`cat $CACHE_DIR/playing 2>/dev/null`
 VIDEO_URL=("www.youtube.com" "www.bilibili.com" "www.odysee.com")
 PROXY_URL=("www.youtube.com" "www.odysee.com")
@@ -54,8 +55,8 @@ play() {
   url=$(sed 's/&/\\&/' <<< $url)
   video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
   stream_cmd=(qlphelper --fa 0.6 -u \'$url\')
-  command -v floatwin >/dev/null && [[ -n $DIMENSION ]] && {
-    floatwin_cmd=(floatwin -c mpv:gl -g $DIMENSION)
+  command -v floatwin >/dev/null && $FLOAT && {
+    floatwin_cmd=(floatwin -c mpv:gl)
     video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})
     stream_cmd=(${floatwin_cmd[@]} ${stream_cmd[@]})
   }
@@ -80,13 +81,13 @@ gen() {
 }
 toggle() { play $PLAYING; }
 
-while getopts "d:p:P:rs:" opt; do
+while getopts "fp:P:rs:" opt; do
   case $opt in
+    f) FLOAT=true;;
     p) PROXY=$OPTARG;;
     P) PROXY="export {http,https}_proxy=http://localhost:$OPTARG";;
     r) REPLACE=true;;
     s) SUB=$OPTARG;;
-    d) FLOATWIN=true; DIMENSION=$OPTARG;;
   esac
 done
 shift $((OPTIND -1))

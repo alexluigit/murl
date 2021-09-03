@@ -49,20 +49,16 @@ _init() {
 
 play() {
   local url="$1" replace=${REPLACE:-false} host=$(__get_host "$1")
+  local floatwin_cmd="" player_cmd=""
+  [[ "${PROXY_URL}" == *"$host"* ]] && eval $PROXY
+  command -v floatwin >/dev/null && $FLOAT && { floatwin_cmd=(floatwin); }
   echo "$url" > $CACHE_DIR/playing
   "$replace" && __kill
   [[ -n "$SUB" ]] && local sub_flag="--sub-file=$SUB"
   url=$(sed 's/&/\\&/' <<< $url)
-  video_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
-  stream_cmd=(qlphelper --fa 0.6 -u \'$url\')
-  command -v floatwin >/dev/null && $FLOAT && {
-    floatwin_cmd=(floatwin -c mpv:gl)
-    video_cmd=(${floatwin_cmd[@]} ${video_cmd[@]})
-    stream_cmd=(${floatwin_cmd[@]} ${stream_cmd[@]})
-  }
-  [[ "${PROXY_URL}" == *"$host"* ]] && eval $PROXY
-  [[ "${VIDEO_URL[@]}" == *"$host"* ]] && eval "exec ${video_cmd[@]} >/dev/null 2>&1"
-  eval "exec ${stream_cmd[@]} >/dev/null 2>&1"
+  [[ "${STREAM_URL[@]}" == *"$host"* ]] && player_cmd=(qlphelper --fa 0.6 -u \'$url\') \
+      || player_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
+  eval "exec ${floatwin_cmd[@]} ${player_cmd[@]} >/dev/null 2>&1"
 }
 json() {
   URL=$1

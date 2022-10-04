@@ -37,7 +37,7 @@ __bilivideo_subs() {
   SUB="$SUB_DIR/$bv_num.ass"
 }
 __kill() {
-  killall qlphelper 2>/dev/null
+  killall dmlive 2>/dev/null
   sleep 2;
 }
 
@@ -56,7 +56,7 @@ play() {
   "$replace" && __kill
   [[ -n "$SUB" ]] && local sub_flag="--sub-file=$SUB"
   url=$(sed 's/&/\\&/' <<< $url)
-  [[ "${STREAM_URL[@]}" == *"$host"* ]] && player_cmd=(qlphelper --fa 0.6 -u \'$url\') \
+  [[ "${STREAM_URL[@]}" == *"$host"* ]] && player_cmd=(dmlive -u \'$url\') \
       || player_cmd=(mpv "$sub_flag" '--vf=lavfi=\"fps=60\"' \'$url\')
   eval "exec ${floatwin_cmd[@]} ${player_cmd[@]} >/dev/null 2>&1"
 }
